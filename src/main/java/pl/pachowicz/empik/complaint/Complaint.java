@@ -2,6 +2,7 @@ package pl.pachowicz.empik.complaint;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import pl.pachowicz.empik.common.CustomerId;
 import pl.pachowicz.empik.common.ProductId;
 
@@ -45,6 +46,7 @@ class Complaint {
 
     private int counter;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     public void increaseCounter() {

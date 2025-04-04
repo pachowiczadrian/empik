@@ -9,8 +9,6 @@ import pl.pachowicz.empik.client.IpApiRestClient;
 import pl.pachowicz.empik.common.CustomerId;
 import pl.pachowicz.empik.common.ProductId;
 
-import java.time.LocalDateTime;
-
 @Service
 @AllArgsConstructor
 @Log4j2
@@ -33,26 +31,9 @@ class ComplaintService {
                         ProductId.of(complaintDto.productId()),
                         CustomerId.of(complaintDto.customerId()));
 
-        Complaint complaint;
-        if (complaintOptional.isPresent()) {
-            complaint = complaintOptional.get();
-            complaint.increaseCounter();
-            log.info("Complaint for specific productId and customerId already exists - counter increased {id={}, counter={}}",
-                    complaint.getId(), complaint.getCounter());
-        } else {
-            complaint = complaintRepository.save(
-                    Complaint.builder()
-                            .productId(ProductId.of(complaintDto.productId()))
-                            .customerId(CustomerId.of(complaintDto.customerId()))
-                            .content(complaintDto.content())
-                            .country(getCountryByIpAddress(ipAddress))
-                            .counter(1)
-                            .createdAt(LocalDateTime.now())
-                            .build()
-            );
-            log.info("New complaint created {id={}}", complaint.getId());
-        }
-        return complaint;
+        return complaintOptional
+                .map(this::increaseCounter)
+                .orElseGet(() -> createNewComplaint(complaintDto, ipAddress));
     }
 
     @Transactional
@@ -65,6 +46,27 @@ class ComplaintService {
     private Complaint findComplaintOrThrowException(Long id) {
         return complaintRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException(String.format("Complaint not found {id=%s}", id)));
+    }
+
+    private Complaint increaseCounter(Complaint complaint) {
+        complaint.increaseCounter();
+        log.info("Complaint for specific productId and customerId already exists - counter increased {id={}, counter={}}",
+                complaint.getId(), complaint.getCounter());
+        return complaint;
+    }
+
+    private Complaint createNewComplaint(ComplaintDto complaintDto, String ipAddress) {
+        var complaint = complaintRepository.save(
+                Complaint.builder()
+                        .productId(ProductId.of(complaintDto.productId()))
+                        .customerId(CustomerId.of(complaintDto.customerId()))
+                        .content(complaintDto.content())
+                        .country(getCountryByIpAddress(ipAddress))
+                        .counter(1)
+                        .build()
+        );
+        log.info("New complaint created {id={}}", complaint.getId());
+        return complaint;
     }
 
     private String getCountryByIpAddress(String ipAddress) {

@@ -67,13 +67,13 @@ class ComplaintServiceTest {
         when(complaintRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         // when
-        complaintService.addComplaintOrIncreaseCounter(complaintDto, IP_ADDRESS);
+        var complaint = complaintService.addComplaintOrIncreaseCounter(complaintDto, IP_ADDRESS);
 
         // then
         verify(complaintRepository, times(shouldAddComplaint ? 1 : 0)).save(any());
         verify(ipApiRestClient, times(shouldAddComplaint ? 1 : 0)).getCountryByIp(IP_ADDRESS);
         verify(complaintSpy, times(shouldAddComplaint ? 0 : 1)).increaseCounter();
-        assertEquals(shouldAddComplaint ? COUNTER : COUNTER + 1, complaintSpy.getCounter());
+        assertEquals(shouldAddComplaint ? 1 : COUNTER + 1, complaint.getCounter());
 
     }
 
