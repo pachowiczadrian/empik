@@ -3,6 +3,7 @@ package pl.pachowicz.empik.complaint;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import pl.pachowicz.empik.common.CustomerId;
 import pl.pachowicz.empik.common.ProductId;
 
@@ -13,12 +14,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Getter
-@Setter
 @Table(
         name = "complaints",
         uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "customer_id"})
 )
 @EqualsAndHashCode(of = "id")
+@DynamicUpdate
 class Complaint {
 
     @Id
@@ -40,6 +41,7 @@ class Complaint {
     })
     private CustomerId customerId;
 
+    @Setter
     private String content;
 
     private String country;
